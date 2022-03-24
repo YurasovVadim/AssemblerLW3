@@ -1,30 +1,28 @@
 SECTION .text
 global getCpuName
 getCpuName:
-
-mov    eax,80000002h
-mov    rsi, buffer 
+push rbp ; пролог
+mov rbp, rsp ; пролог
+push rbx 
+mov rdi, cpustr
+mov esi, 0x80000002
+get_brand:
+mov eax, esi
 cpuid
-mov    [rsi   ],eax
-mov    [rsi+ 4],ebx
-mov    [rsi+ 8],ecx
-mov    [rsi+12],edx
-
-mov    eax,80000003h
-cpuid
-mov    [rsi+16],eax
-mov    [rsi+20],ebx
-mov    [rsi+24],ecx
-mov    [rsi+28],edx
-
-mov    eax,80000004h
-cpuid
-mov    [rsi+32],eax
-mov    [rsi+36],ebx
-mov    [rsi+40],ecx
-mov    [rsi+44],edx
-ret 
-
+mov [rdi], eax
+mov [rdi+4], ebx
+mov [rdi+8], ecx
+mov [rdi+12], edx
+inc esi
+add rdi, 16
+cmp esi, 0x80000004
+jle get_brand
+mov eax, cpustr; возврат указателя на строку
+pop rbx
+pop rbp ; эпилог
+retn ; возврат
+;----------------------------------
 SECTION .bss
-buffer: resb 48 
-len EQU $ - buffer
+cpustr: resb 48 ; CPU name string
+cpustr_len EQU $ - cpustr
+
